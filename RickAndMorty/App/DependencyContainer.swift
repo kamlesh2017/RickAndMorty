@@ -18,8 +18,12 @@ final class DependencyContainer {
         let configuration = URLSessionConfiguration.default
         configuration.timeoutIntervalForRequest = 30
         session = URLSession(configuration: configuration)
-        networkService = NetworkService(session: session)
-        characterRepository = CharacterRepository(networkService: networkService)
+
+        let reachability: NetworkReachabilityManaging = isPreview
+            ? PreviewNetworkReachability()
+            : NetworkReachabilityManager.shared
+        networkService = NetworkService(session: session, reachability: reachability)
+        characterRepository = CharacterRepository(networkService: networkService, reachability: reachability)
         favoritesRepository = FavoritesRepository(
             defaults: isPreview ? UserDefaults(suiteName: "preview")! : .standard
         )
@@ -43,4 +47,12 @@ final class DependencyContainer {
             toggleFavoriteUseCase: toggleFavoriteUseCase
         )
     }
+}
+
+private struct PreviewNetworkReachability: NetworkReachabilityManaging {
+    var isConnected: Bool { true }
+
+    func startMonitoring() {}
+
+    func stopMonitoring() {}
 }

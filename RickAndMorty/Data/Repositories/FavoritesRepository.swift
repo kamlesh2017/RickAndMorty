@@ -3,26 +3,31 @@ import Foundation
 final class FavoritesRepository: FavoritesRepositoryProtocol, @unchecked Sendable {
     private let defaults: UserDefaults
     private let storageKey = "favorite_character_ids"
+    private var favorites: Set<Int>
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        favorites = Set(defaults.array(forKey: storageKey) as? [Int] ?? [])
     }
 
     func isFavorite(characterID: Int) -> Bool {
-        favoriteCharacterIDs().contains(characterID)
+        favorites.contains(characterID)
     }
 
     func toggleFavorite(characterID: Int) {
-        var favorites = favoriteCharacterIDs()
         if favorites.contains(characterID) {
             favorites.remove(characterID)
         } else {
             favorites.insert(characterID)
         }
-        defaults.set(Array(favorites), forKey: storageKey)
+        save()
     }
 
     func favoriteCharacterIDs() -> Set<Int> {
-        Set(defaults.array(forKey: storageKey) as? [Int] ?? [])
+        favorites
+    }
+
+    private func save() {
+        defaults.set(Array(favorites), forKey: storageKey)
     }
 }

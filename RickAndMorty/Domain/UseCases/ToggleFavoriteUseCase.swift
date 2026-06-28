@@ -7,9 +7,8 @@ struct ToggleFavoriteUseCase: Sendable {
         self.repository = repository
     }
 
-    func execute(characterID: Int) -> Bool {
+    func execute(characterID: Int) {
         repository.toggleFavorite(characterID: characterID)
-        return repository.isFavorite(characterID: characterID)
     }
 
     func isFavorite(characterID: Int) -> Bool {

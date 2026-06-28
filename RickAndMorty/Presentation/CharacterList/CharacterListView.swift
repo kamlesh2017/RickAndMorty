@@ -8,26 +8,16 @@ struct CharacterListView: View {
     }
 
     var body: some View {
-        List {
-            if viewModel.state == .loading {
-                loadingSection
-            } else {
-                characterSection
+        VStack(spacing: 0) {
+            SearchBarView(text: $viewModel.searchText, prompt: "Search by name")
 
-                if viewModel.state == .loadingMore {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
-                    }
-                    .listRowSeparator(.hidden)
-                }
-            }
+            filterBar
+
+            listContent
         }
-        .listStyle(.insetGrouped)
         .background(AppColors.groupedBackground)
         .navigationTitle("Characters")
-        .searchable(text: $viewModel.searchText, prompt: "Search by name")
+        .navigationBarTitleDisplayMode(.large)
         .toolbar {
             if viewModel.state == .offlineCached {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -36,12 +26,6 @@ struct CharacterListView: View {
                         .foregroundStyle(.secondary)
                 }
             }
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            filterBar
-        }
-        .overlay {
-            overlayContent
         }
         .navigationDestination(for: Int.self) { characterID in
             CharacterDetailView(
@@ -75,7 +59,30 @@ struct CharacterListView: View {
             .padding(.horizontal)
             .padding(.vertical, 8)
         }
-        .background(Color(.systemBackground).opacity(0.95))
+        .background(Color(.systemBackground))
+    }
+
+    private var listContent: some View {
+        List {
+            if viewModel.state == .loading {
+                loadingSection
+            } else {
+                characterSection
+
+                if viewModel.state == .loadingMore {
+                    HStack {
+                        Spacer()
+                        ProgressView()
+                        Spacer()
+                    }
+                    .listRowSeparator(.hidden)
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .overlay {
+            overlayContent
+        }
     }
 
     private var loadingSection: some View {

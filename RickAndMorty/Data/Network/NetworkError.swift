@@ -6,6 +6,7 @@ enum NetworkError: Error, Equatable {
     case httpError(statusCode: Int)
     case decodingFailed
     case noData
+    case noConnection
     case underlying(String)
 }
 
@@ -22,8 +23,31 @@ extension NetworkError: LocalizedError {
             return "Unable to decode the server response."
         case .noData:
             return "No data was returned from the server."
-        case .underlying(let message):
-            return message
+        case .noConnection:
+            return "No internet connection."
+        case .underlying:
+            return "Something went wrong. Please try again later."
+        }
+    }
+}
+
+extension NetworkError {
+    static func from(_ error: Error) -> NetworkError {
+        guard let urlError = error as? URLError else {
+            return .underlying(error.localizedDescription)
+        }
+
+        switch urlError.code {
+        case .notConnectedToInternet,
+             .networkConnectionLost,
+             .dataNotAllowed,
+             .cannotFindHost,
+             .cannotConnectToHost,
+             .dnsLookupFailed,
+             .timedOut:
+            return .noConnection
+        default:
+            return .underlying(urlError.localizedDescription)
         }
     }
 }
