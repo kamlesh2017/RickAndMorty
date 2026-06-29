@@ -75,7 +75,7 @@ struct CharacterDetailView: View {
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     } else {
-                        ForEach(character.episodes) { episode in
+                        ForEach(character.episodes, id: \.id) { episode in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(episode.name)
                                     .font(.subheadline.weight(.medium))
