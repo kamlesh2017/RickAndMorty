@@ -2,33 +2,9 @@
 
 Browse every character from the Rick and Morty universe — search by name, filter by status, save favourites, and drill into episode history. Built with **SwiftUI** and **Clean Architecture** as a production-style iOS sample app.
 
-![Platform](https://img.shields.io/badge/Platform-iOS%2016%2B-blue)
-![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)
-![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-green)
-![Architecture](https://img.shields.io/badge/Architecture-Clean-lightgrey)
+**Platform:** iOS 16+ · **Swift:** 5.9+ · **UI:** SwiftUI · **Architecture:** Clean
 
----
-
-## Screenshots
-
-<table>
-  <tr>
-    <td align="center"><b>Character list</b><br/>Browse with avatars, status badges, and favourites</td>
-    <td align="center"><b>Status filters</b><br/>Filter by Alive, Dead, or Unknown</td>
-    <td align="center"><b>Character detail</b><br/>Full profile and episode history</td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/character-list.png" alt="Character list" width="260" /></td>
-    <td><img src="docs/screenshots/filter-alive.png" alt="Filter by Alive status" width="260" /></td>
-    <td><img src="docs/screenshots/character-detail.png" alt="Character detail" width="260" /></td>
-  </tr>
-  <tr>
-    <td align="center" colspan="3"><b>Offline &amp; error handling</b><br/>Graceful fallback with a clear retry action when the network is unavailable</td>
-  </tr>
-  <tr>
-    <td align="center" colspan="3"><img src="docs/screenshots/offline-error.png" alt="Offline error state with retry" width="260" /></td>
-  </tr>
-</table>
+**Screenshots:** [`docs/screenshots/`](docs/screenshots/)
 
 ---
 
