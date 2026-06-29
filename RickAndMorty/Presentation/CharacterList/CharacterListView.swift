@@ -94,7 +94,7 @@ struct CharacterListView: View {
 
     private var characterSection: some View {
         Section {
-            ForEach(viewModel.characters) { character in
+            ForEach(viewModel.characters, id: \.id) { character in
                 HStack(spacing: 0) {
                     NavigationLink(value: character.id) {
                         CharacterRowView(
