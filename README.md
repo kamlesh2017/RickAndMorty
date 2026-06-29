@@ -1,0 +1,128 @@
+# Rick & Morty iOS
+
+Browse every character from the Rick and Morty universe — search by name, filter by status, save favourites, and drill into episode history. Built with **SwiftUI** and **Clean Architecture** as a production-style iOS sample app.
+
+![Platform](https://img.shields.io/badge/Platform-iOS%2016%2B-blue)
+![Swift](https://img.shields.io/badge/Swift-5.9%2B-orange)
+![SwiftUI](https://img.shields.io/badge/UI-SwiftUI-green)
+![Architecture](https://img.shields.io/badge/Architecture-Clean-lightgrey)
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td align="center"><b>Character list</b><br/>Browse with avatars, status badges, and favourites</td>
+    <td align="center"><b>Status filters</b><br/>Filter by Alive, Dead, or Unknown</td>
+    <td align="center"><b>Character detail</b><br/>Full profile and episode history</td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/character-list.png" alt="Character list" width="260" /></td>
+    <td><img src="docs/screenshots/filter-alive.png" alt="Filter by Alive status" width="260" /></td>
+    <td><img src="docs/screenshots/character-detail.png" alt="Character detail" width="260" /></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="3"><b>Offline &amp; error handling</b><br/>Graceful fallback with a clear retry action when the network is unavailable</td>
+  </tr>
+  <tr>
+    <td align="center" colspan="3"><img src="docs/screenshots/offline-error.png" alt="Offline error state with retry" width="260" /></td>
+  </tr>
+</table>
+
+---
+
+## What it does
+
+| | |
+|---|---|
+| 🔍 **Search** | Find characters by name with debounced input so the API isn't hit on every keystroke |
+| 🏷️ **Filter** | Narrow the list to Alive, Dead, or Unknown — works together with search |
+| ❤️ **Favourites** | Tap the heart on any row or detail screen; saved locally between launches |
+| 📄 **Infinite scroll** | Characters load page by page as you scroll toward the bottom |
+| 📱 **Detail view** | See species, gender, origin, location, and every episode a character appears in |
+| 📶 **Offline mode** | If the network drops, the app shows the last successfully loaded list |
+| 🌙 **Dark mode** | Adaptive colours throughout — no hard-coded light-only styling |
+
+---
+
+## Quick start
+
+**You need:** Xcode 15+ and an iOS 16+ simulator or device.
+
+```bash
+git clone <your-repo-url>
+cd RickAndMorty
+open RickAndMorty.xcodeproj
+```
+
+Press **⌘R** to run, **⌘U** to test.
+
+Or from the command line:
+
+```bash
+xcodebuild -scheme RickAndMorty \
+  -destination 'platform=iOS Simulator,name=iPhone 16' \
+  test
+```
+
+Data comes from the free, public [Rick and Morty API](https://rickandmortyapi.com).
+
+---
+
+## How it's built
+
+This is a **three-layer Clean Architecture** app — Presentation, Domain, and Data — wired together through a single `DependencyContainer`. ViewModels never talk to the network directly; they call use cases, which call repository protocols.
+
+```
+Presentation  →  ViewModels, SwiftUI views, components
+Domain        →  Models, use cases, repository protocols (pure Swift)
+Data          →  Network layer, DTOs, mappers, cache, concrete repositories
+```
+
+```
+RickAndMorty/
+├── App/DependencyContainer.swift
+├── Domain/
+│   ├── Models/
+│   ├── UseCases/
+│   ├── Repositories/        # protocols
+│   └── Errors/
+├── Data/
+│   ├── Network/
+│   ├── DTOs/ & Mappers/
+│   ├── Cache/
+│   └── Repositories/        # implementations
+└── Presentation/
+    ├── CharacterList/
+    ├── CharacterDetail/
+    └── Common/
+```
+
+**Design choices worth noting:**
+
+- **Use cases hold business logic** — ViewModels only manage UI state and user actions.
+- **Testable networking** — `URLSession` is hidden behind `URLSessionProtocol`; tests inject `MockURLSession`.
+- **DTOs never leak into Domain** — API responses are mapped to domain models in the Data layer.
+- **404 on search = empty list** — the API returns 404 when no character matches; the app treats that as "no results", not a crash.
+- **UserDefaults for persistence** — favourites and the offline character cache; simple and sufficient at this scale.
+
+**Testing:** unit tests cover ViewModels, use cases, and the network service; snapshot-style tests verify character row rendering across all status states.
+
+---
+
+## Trade-offs & next steps
+
+| Decision | Why |
+|----------|-----|
+| UserDefaults over SwiftData | No schema migrations needed for a small favourites + cache store |
+| Parallel episode fetching | Faster detail screen; trades a burst of requests for lower latency |
+| Single Xcode target | Layer boundaries enforced by folders, not separate SPM packages |
+
+**If I had more time:** extract Domain/Data into SPM modules, add image caching for smoother scrolling, adopt reference-image snapshot testing, introduce a Coordinator for navigation, and complete a localisation + VoiceOver audit.
+
+---
+
+## Disclaimer
+
+Built for learning and portfolio use. Rick and Morty is © Adult Swim / Warner Bros. Discovery. Character data from [rickandmortyapi.com](https://rickandmortyapi.com).
