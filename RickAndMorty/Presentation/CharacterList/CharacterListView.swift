@@ -38,27 +38,26 @@ struct CharacterListView: View {
     }
 
     private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                FilterChipView(
-                    title: "All",
-                    isSelected: viewModel.selectedStatus == nil
-                ) {
-                    viewModel.selectedStatus = nil
-                }
+        HStack(spacing: 8) {
+            FilterChipView(
+                title: "All",
+                isSelected: viewModel.selectedStatus == nil
+            ) {
+                viewModel.selectedStatus = nil
+            }
 
-                ForEach(CharacterStatus.allCases, id: \.self) { status in
-                    FilterChipView(
-                        title: status.rawValue,
-                        isSelected: viewModel.selectedStatus == status
-                    ) {
-                        viewModel.selectedStatus = viewModel.selectedStatus == status ? nil : status
-                    }
+            ForEach(CharacterStatus.allCases, id: \.self) { status in
+                FilterChipView(
+                    title: status.rawValue,
+                    isSelected: viewModel.selectedStatus == status
+                ) {
+                    viewModel.selectedStatus = viewModel.selectedStatus == status ? nil : status
                 }
             }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
         }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
         .background(Color(.systemBackground))
     }
 
