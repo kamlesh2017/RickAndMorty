@@ -78,8 +78,8 @@ final class CharacterListViewModel: ObservableObject {
     }
 
     func toggleFavorite(for characterID: Int) {
-        _ = toggleFavoriteUseCase.execute(characterID: characterID)
-        refreshFavoriteState()
+        toggleFavoriteUseCase.execute(characterID: characterID)
+        favoriteIDs.formSymmetricDifference([characterID])
     }
 
     func isFavorite(_ characterID: Int) -> Bool {
@@ -129,7 +129,7 @@ final class CharacterListViewModel: ObservableObject {
                 refreshFavoriteState()
                 state = .offlineCached
             } else if characters.isEmpty {
-                state = .error(error.localizedDescription)
+                state = .error(error.userFacingMessage)
             } else {
                 state = .loaded
             }

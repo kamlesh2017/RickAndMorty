@@ -8,6 +8,60 @@ struct CharacterListView: View {
     }
 
     var body: some View {
+        VStack(spacing: 0) {
+            SearchBarView(text: $viewModel.searchText, prompt: "Search by name")
+
+            filterBar
+
+            listContent
+        }
+        .background(AppColors.groupedBackground)
+        .navigationTitle("Characters")
+        .navigationBarTitleDisplayMode(.large)
+        .toolbar {
+            if viewModel.state == .offlineCached {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Label("Offline", systemImage: "wifi.slash")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+            }
+        }
+        .navigationDestination(for: Int.self) { characterID in
+            CharacterDetailView(
+                viewModel: DependencyContainer.shared.makeCharacterDetailViewModel(characterID: characterID)
+            )
+        }
+        .task {
+            await viewModel.onAppear()
+        }
+    }
+
+    private var filterBar: some View {
+        HStack(spacing: 8) {
+            FilterChipView(
+                title: "All",
+                isSelected: viewModel.selectedStatus == nil
+            ) {
+                viewModel.selectedStatus = nil
+            }
+
+            ForEach(CharacterStatus.allCases, id: \.self) { status in
+                FilterChipView(
+                    title: status.rawValue,
+                    isSelected: viewModel.selectedStatus == status
+                ) {
+                    viewModel.selectedStatus = viewModel.selectedStatus == status ? nil : status
+                }
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .center)
+        .padding(.horizontal)
+        .padding(.vertical, 8)
+        .background(Color(.systemBackground))
+    }
+
+    private var listContent: some View {
         List {
             if viewModel.state == .loading {
                 loadingSection
@@ -25,57 +79,9 @@ struct CharacterListView: View {
             }
         }
         .listStyle(.insetGrouped)
-        .background(AppColors.groupedBackground)
-        .navigationTitle("Characters")
-        .searchable(text: $viewModel.searchText, prompt: "Search by name")
-        .toolbar {
-            if viewModel.state == .offlineCached {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Label("Offline", systemImage: "wifi.slash")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .safeAreaInset(edge: .top, spacing: 0) {
-            filterBar
-        }
         .overlay {
             overlayContent
         }
-        .navigationDestination(for: Int.self) { characterID in
-            CharacterDetailView(
-                viewModel: DependencyContainer.shared.makeCharacterDetailViewModel(characterID: characterID)
-            )
-        }
-        .task {
-            await viewModel.onAppear()
-        }
-    }
-
-    private var filterBar: some View {
-        ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
-                FilterChipView(
-                    title: "All",
-                    isSelected: viewModel.selectedStatus == nil
-                ) {
-                    viewModel.selectedStatus = nil
-                }
-
-                ForEach(CharacterStatus.allCases, id: \.self) { status in
-                    FilterChipView(
-                        title: status.rawValue,
-                        isSelected: viewModel.selectedStatus == status
-                    ) {
-                        viewModel.selectedStatus = viewModel.selectedStatus == status ? nil : status
-                    }
-                }
-            }
-            .padding(.horizontal)
-            .padding(.vertical, 8)
-        }
-        .background(Color(.systemBackground).opacity(0.95))
     }
 
     private var loadingSection: some View {

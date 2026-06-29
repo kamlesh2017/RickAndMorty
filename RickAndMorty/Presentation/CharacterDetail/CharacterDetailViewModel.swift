@@ -39,7 +39,8 @@ final class CharacterDetailViewModel: ObservableObject {
     }
 
     func toggleFavorite() {
-        isFavorite = toggleFavoriteUseCase.execute(characterID: characterID)
+        toggleFavoriteUseCase.execute(characterID: characterID)
+        isFavorite.toggle()
     }
 
     private func load() async {
@@ -49,7 +50,7 @@ final class CharacterDetailViewModel: ObservableObject {
             character = try await fetchCharacterDetailUseCase.execute(id: characterID)
             state = .loaded
         } catch {
-            state = .error(error.localizedDescription)
+            state = .error(error.userFacingMessage)
         }
     }
 }
