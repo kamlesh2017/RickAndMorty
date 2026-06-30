@@ -1,12 +1,12 @@
 import SwiftUI
-import UIKit
 import XCTest
 @testable import RickAndMorty
 
 @MainActor
 final class CharacterRowSnapshotTests: XCTestCase {
-    func testCharacterRowRendersAliveState() {
-        assertSnapshot(
+    func testCharacterRowAliveWithFavoriteSnapshot() throws {
+        try SnapshotTesting.assertSnapshot(
+            named: "CharacterRowAliveWithFavorite",
             for: CharacterRowView(
                 character: .sample(id: 1, name: "Rick Sanchez", status: .alive),
                 isFavorite: true
@@ -14,8 +14,9 @@ final class CharacterRowSnapshotTests: XCTestCase {
         )
     }
 
-    func testCharacterRowRendersDeadState() {
-        assertSnapshot(
+    func testCharacterRowDeadSnapshot() throws {
+        try SnapshotTesting.assertSnapshot(
+            named: "CharacterRowDead",
             for: CharacterRowView(
                 character: .sample(id: 2, name: "Birdperson", status: .dead),
                 isFavorite: false
@@ -23,31 +24,13 @@ final class CharacterRowSnapshotTests: XCTestCase {
         )
     }
 
-    func testCharacterRowRendersUnknownState() {
-        assertSnapshot(
+    func testCharacterRowUnknownSnapshot() throws {
+        try SnapshotTesting.assertSnapshot(
+            named: "CharacterRowUnknown",
             for: CharacterRowView(
                 character: .sample(id: 3, name: "Unknown Entity", status: .unknown),
                 isFavorite: false
             )
         )
-    }
-
-    private func assertSnapshot<V: View>(for view: V, width: CGFloat = 375, height: CGFloat = 88) {
-        let host = UIHostingController(
-            rootView: view
-                .padding(.horizontal, 16)
-                .frame(width: width, height: height)
-                .background(Color(.systemBackground))
-        )
-        host.view.frame = CGRect(x: 0, y: 0, width: width, height: height)
-        host.view.layoutIfNeeded()
-
-        let renderer = UIGraphicsImageRenderer(size: host.view.bounds.size)
-        let image = renderer.image { _ in
-            host.view.drawHierarchy(in: host.view.bounds, afterScreenUpdates: true)
-        }
-
-        XCTAssertGreaterThan(image.size.width, 0)
-        XCTAssertGreaterThan(image.size.height, 0)
     }
 }
