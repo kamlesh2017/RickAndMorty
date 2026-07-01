@@ -25,8 +25,8 @@ final class NetworkServiceTests: XCTestCase {
 
         let response: CharactersResponseDTO = try await service.request(CharactersResponseDTO.self, url: URL(string: "https://rickandmortyapi.com/api/character")!)
 
-        XCTAssertEqual(response.results.count, 1)
-        XCTAssertEqual(response.results.first?.name, "Rick Sanchez")
+        XCTAssertEqual(response.results?.count, 1)
+        XCTAssertEqual(response.results?.first?.name, "Rick Sanchez")
     }
 
     func testHTTPErrorIsMapped() async {
@@ -65,11 +65,7 @@ final class NetworkServiceTests: XCTestCase {
             _ = try await service.request(CharactersResponseDTO.self, url: URL(string: "https://rickandmortyapi.com/api/character")!)
             XCTFail("Expected underlying error")
         } catch let error as NetworkError {
-            if case .underlying = error {
-                XCTAssertTrue(true)
-            } else {
-                XCTFail("Expected underlying error, got \(error)")
-            }
+            XCTAssertEqual(error, .noConnection)
         } catch {
             XCTFail("Unexpected error: \(error)")
         }

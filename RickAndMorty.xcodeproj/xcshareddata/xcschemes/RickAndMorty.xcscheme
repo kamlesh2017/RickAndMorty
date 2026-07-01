@@ -21,6 +21,34 @@
                ReferencedContainer = "container:RickAndMorty.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1AE1C34E2FE52A2100D3C3C8"
+               BuildableName = "RickAndMortyTests.xctest"
+               BlueprintName = "RickAndMortyTests"
+               ReferencedContainer = "container:RickAndMorty.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1AE1C3582FE52A2100D3C3C8"
+               BuildableName = "RickAndMortyUITests.xctest"
+               BlueprintName = "RickAndMortyUITests"
+               ReferencedContainer = "container:RickAndMorty.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -29,6 +57,30 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES"
       shouldAutocreateTestPlan = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1AE1C34E2FE52A2100D3C3C8"
+               BuildableName = "RickAndMortyTests.xctest"
+               BlueprintName = "RickAndMortyTests"
+               ReferencedContainer = "container:RickAndMorty.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "1AE1C3582FE52A2100D3C3C8"
+               BuildableName = "RickAndMortyUITests.xctest"
+               BlueprintName = "RickAndMortyUITests"
+               ReferencedContainer = "container:RickAndMorty.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
    </TestAction>
    <LaunchAction
       buildConfiguration = "Debug"
