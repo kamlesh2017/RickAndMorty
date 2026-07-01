@@ -3,13 +3,16 @@ import Foundation
 final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
     private let reachability: NetworkReachabilityManaging
+    private let cacheStore: CharacterCacheStore
 
     init(
         networkService: NetworkServiceProtocol,
-        reachability: NetworkReachabilityManaging = NetworkReachabilityManager.shared
+        reachability: NetworkReachabilityManaging = NetworkReachabilityManager.shared,
+        cacheStore: CharacterCacheStore
     ) {
         self.networkService = networkService
         self.reachability = reachability
+        self.cacheStore = cacheStore
     }
 
     func fetchCharacters(url: URL) async throws -> PaginatedCharacters {
@@ -20,7 +23,7 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
         do {
             let response: CharactersResponseDTO = try await networkService.request(CharactersResponseDTO.self, url: url)
             let result = CharacterMapper.map(response)
-            cacheCharacters(result)
+            await cacheCharacters(result)
             return result
         } catch let error as NetworkError where error == .httpError(statusCode: 404) {
             return PaginatedCharacters(characters: [], nextPageURL: nil)
@@ -54,12 +57,12 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
         }
     }
 
-    func cachedCharacters() -> PaginatedCharacters? {
-        CharacterCacheStore.load()
+    func cachedCharacters() async -> PaginatedCharacters? {
+        await cacheStore.load()
     }
 
-    func cacheCharacters(_ result: PaginatedCharacters) {
-        CharacterCacheStore.save(result)
+    func cacheCharacters(_ result: PaginatedCharacters) async {
+        await cacheStore.save(result)
     }
 
     private func fetchLocation(from reference: LocationDTO?) async -> Location? {

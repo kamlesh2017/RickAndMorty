@@ -15,7 +15,7 @@ struct FetchCharactersUseCase: Sendable {
         try await execute(url: APIEndpoint.characters(name: name, status: status))
     }
 
-    func cachedResult() -> PaginatedCharacters? {
-        repository.cachedCharacters()
+    func cachedResult() async -> PaginatedCharacters? {
+        await repository.cachedCharacters()
     }
 }

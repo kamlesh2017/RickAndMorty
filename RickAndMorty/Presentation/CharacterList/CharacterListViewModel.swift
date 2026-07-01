@@ -130,7 +130,7 @@ final class CharacterListViewModel: ObservableObject {
                 state = .loaded
             }
         } catch {
-            if reset, let cached = fetchCharactersUseCase.cachedResult() {
+            if reset, let cached = await fetchCharactersUseCase.cachedResult() {
                 let filtered = applyLocalFilters(
                     to: cached,
                     name: name,

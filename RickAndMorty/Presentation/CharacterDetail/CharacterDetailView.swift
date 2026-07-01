@@ -177,6 +177,6 @@ private final class PreviewCharacterRepository: CharacterRepositoryProtocol, @un
         )
     }
 
-    func cachedCharacters() -> PaginatedCharacters? { nil }
-    func cacheCharacters(_ result: PaginatedCharacters) {}
+    func cachedCharacters() async -> PaginatedCharacters? { nil }
+    func cacheCharacters(_ result: PaginatedCharacters) async {}
 }

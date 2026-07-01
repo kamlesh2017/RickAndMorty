@@ -15,11 +15,11 @@ final class MockCharacterRepository: CharacterRepositoryProtocol, @unchecked Sen
         throw DomainError.notFound
     }
 
-    func cachedCharacters() -> PaginatedCharacters? {
+    func cachedCharacters() async -> PaginatedCharacters? {
         cachedResultValue
     }
 
-    func cacheCharacters(_ result: PaginatedCharacters) {}
+    func cacheCharacters(_ result: PaginatedCharacters) async {}
 }
 
 extension PaginatedCharacters {

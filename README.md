@@ -2,7 +2,7 @@
 
 Browse every character from the Rick and Morty universe — search by name, filter by status, save favourites, and drill into episode history. Built with **SwiftUI** and **Clean Architecture** as a production-style iOS sample app.
 
-**Platform:** iOS 16+ · **Swift:** 5.9+ · **UI:** SwiftUI · **Architecture:** Clean
+**Platform:** iOS 17+ · **Swift:** 5.9+ · **UI:** SwiftUI · **Architecture:** Clean
 
 **Screenshots:** [`docs/screenshots/`](docs/screenshots/)
 
@@ -24,7 +24,7 @@ Browse every character from the Rick and Morty universe — search by name, filt
 
 ## Quick start
 
-**You need:** Xcode 15+ and an iOS 16+ simulator or device.
+**You need:** Xcode 15+ and an iOS 17+ simulator or device.
 
 ```bash
 git clone <your-repo-url>
@@ -81,7 +81,7 @@ RickAndMorty/
 - **Testable networking** — `URLSession` is hidden behind `URLSessionProtocol`; tests inject `MockURLSession`.
 - **DTOs never leak into Domain** — API responses are mapped to domain models in the Data layer.
 - **404 on search = empty list** — the API returns 404 when no character matches; the app treats that as "no results", not a crash.
-- **UserDefaults for persistence** — favourites and the offline character cache; simple and sufficient at this scale.
+- **SwiftData + UserDefaults for persistence** — the latest fetched character page is cached in SwiftData (30-minute TTL); favourites stay in UserDefaults.
 
 **Testing:** unit tests cover ViewModels, use cases, and the network service; snapshot-style tests verify character row rendering across all status states.
 
@@ -91,7 +91,7 @@ RickAndMorty/
 
 | Decision | Why |
 |----------|-----|
-| UserDefaults over SwiftData | No schema migrations needed for a small favourites + cache store |
+| SwiftData for character cache | Persists the latest fetched page with a 30-minute TTL; favourites stay in UserDefaults |
 | Parallel episode fetching | Faster detail screen; trades a burst of requests for lower latency |
 | Single Xcode target | Layer boundaries enforced by folders, not separate SPM packages |
 

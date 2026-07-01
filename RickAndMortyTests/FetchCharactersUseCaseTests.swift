@@ -36,7 +36,7 @@ final class FetchCharactersUseCaseTests: XCTestCase {
         )
     }
 
-    func testCachedResultReturnsRepositoryCache() {
+    func testCachedResultReturnsRepositoryCache() async {
         let repository = MockCharacterRepository()
         let cached = PaginatedCharacters(
             characters: [.sample(id: 5, name: "Summer")],
@@ -46,6 +46,6 @@ final class FetchCharactersUseCaseTests: XCTestCase {
 
         let useCase = FetchCharactersUseCase(repository: repository)
 
-        XCTAssertEqual(useCase.cachedResult(), cached)
+        XCTAssertEqual(await useCase.cachedResult(), cached)
     }
 }
