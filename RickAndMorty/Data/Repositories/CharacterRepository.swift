@@ -14,7 +14,7 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
 
     func fetchCharacters(url: URL) async throws -> PaginatedCharacters {
         guard reachability.isConnected else {
-            return try offlineFallback()
+            throw DomainError.networkUnavailable
         }
 
         do {
@@ -25,9 +25,6 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
         } catch let error as NetworkError where error == .httpError(statusCode: 404) {
             return PaginatedCharacters(characters: [], nextPageURL: nil)
         } catch {
-            if let cached = cachedCharacters() {
-                return cached
-            }
             throw mapError(error)
         }
     }
@@ -46,8 +43,8 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
             async let episodes = fetchEpisodes(from: characterDTO.episode)
             return CharacterMapper.mapDetail(
                 characterDTO,
-                origin: try await origin,
-                location: try await location,
+                origin: await origin,
+                location: await location,
                 episodes: try await episodes
             )
         } catch let error as NetworkError where error == .httpError(statusCode: 404) {
@@ -63,13 +60,6 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
 
     func cacheCharacters(_ result: PaginatedCharacters) {
         CharacterCacheStore.save(result)
-    }
-
-    private func offlineFallback() throws -> PaginatedCharacters {
-        if let cached = cachedCharacters() {
-            return cached
-        }
-        throw DomainError.networkUnavailable
     }
 
     private func fetchLocation(from reference: LocationDTO?) async -> Location? {

@@ -93,4 +93,24 @@ final class CharacterListViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.characters.count, 1)
         XCTAssertEqual(viewModel.state, .offlineCached)
     }
+
+    func testOfflineFilterAppliesLocallyToCachedData() async {
+        repository.fetchCharactersResult = .failure(DomainError.networkUnavailable)
+        repository.cachedResultValue = PaginatedCharacters(
+            characters: [
+                .sample(id: 1, name: "Rick", status: .alive),
+                .sample(id: 2, name: "Birdperson", status: .dead)
+            ],
+            nextPageURL: nil
+        )
+
+        await viewModel.onAppear()
+        XCTAssertEqual(viewModel.characters.count, 2)
+
+        viewModel.selectedStatus = .dead
+        try? await Task.sleep(nanoseconds: 100_000_000)
+
+        XCTAssertEqual(viewModel.characters.map(\.id), [2])
+        XCTAssertEqual(viewModel.state, .offlineCached)
+    }
 }

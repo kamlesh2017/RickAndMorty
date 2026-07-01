@@ -130,12 +130,17 @@ final class CharacterListViewModel: ObservableObject {
                 state = .loaded
             }
         } catch {
-            if characters.isEmpty, let cached = fetchCharactersUseCase.cachedResult() {
-                characters = cached.characters
-                nextPageURL = cached.nextPageURL
-                hasNextPage = cached.nextPageURL != nil
+            if reset, let cached = fetchCharactersUseCase.cachedResult() {
+                let filtered = applyLocalFilters(
+                    to: cached,
+                    name: name,
+                    status: status
+                )
+                characters = filtered.characters
+                nextPageURL = nil
+                hasNextPage = false
                 refreshFavoriteState()
-                state = .offlineCached
+                state = filtered.characters.isEmpty ? .empty : .offlineCached
             } else if characters.isEmpty {
                 state = .error(error.userFacingMessage)
             } else {
@@ -148,5 +153,23 @@ final class CharacterListViewModel: ObservableObject {
 
     private func refreshFavoriteState() {
         favoriteIDs = Set(characters.map(\.id).filter { toggleFavoriteUseCase.isFavorite(characterID: $0) })
+    }
+
+    private func applyLocalFilters(
+        to cached: PaginatedCharacters,
+        name: String?,
+        status: CharacterStatus?
+    ) -> PaginatedCharacters {
+        var filtered = cached.characters
+
+        if let status {
+            filtered = filtered.filter { $0.status == status }
+        }
+
+        if let name, !name.isEmpty {
+            filtered = filtered.filter { ($0.name ?? "").localizedCaseInsensitiveContains(name) }
+        }
+
+        return PaginatedCharacters(characters: filtered, nextPageURL: nil)
     }
 }
