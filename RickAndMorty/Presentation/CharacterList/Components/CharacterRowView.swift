@@ -13,15 +13,15 @@ struct CharacterRowView: View {
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(character.name)
+                Text(character.name ?? "")
                     .font(.headline)
                     .foregroundStyle(.primary)
 
-                Text(character.species)
+                Text(character.species ?? "")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                StatusBadgeView(status: character.status)
+                StatusBadgeView(status: character.status ?? .unknown)
             }
 
             Spacer(minLength: 0)

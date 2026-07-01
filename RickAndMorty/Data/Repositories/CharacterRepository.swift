@@ -41,8 +41,15 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
 
         do {
             let characterDTO: CharacterDTO = try await networkService.request(CharacterDTO.self, url: url)
-            let episodes = try await fetchEpisodes(from: characterDTO.episode)
-            return CharacterMapper.mapDetail(characterDTO, episodes: episodes)
+            async let origin = fetchLocation(from: characterDTO.origin)
+            async let location = fetchLocation(from: characterDTO.location)
+            async let episodes = fetchEpisodes(from: characterDTO.episode)
+            return CharacterMapper.mapDetail(
+                characterDTO,
+                origin: try await origin,
+                location: try await location,
+                episodes: try await episodes
+            )
         } catch let error as NetworkError where error == .httpError(statusCode: 404) {
             throw DomainError.notFound
         } catch {
@@ -65,8 +72,29 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
         throw DomainError.networkUnavailable
     }
 
-    private func fetchEpisodes(from urls: [String]) async throws -> [Episode] {
-        let episodeURLs = urls.compactMap(URL.init(string:))
+    private func fetchLocation(from reference: LocationDTO?) async -> Location? {
+        guard let reference else { return nil }
+
+        let resolved: Location
+        if let urlString = reference.url, let url = URL(string: urlString) {
+            do {
+                let dto: LocationDetailDTO = try await networkService.request(LocationDetailDTO.self, url: url)
+                resolved = CharacterMapper.map(dto)
+            } catch {
+                resolved = Location(name: reference.name, type: nil)
+            }
+        } else {
+            resolved = Location(name: reference.name, type: nil)
+        }
+
+        if resolved.name == nil && resolved.type == nil {
+            return nil
+        }
+        return resolved
+    }
+
+    private func fetchEpisodes(from urls: [String]?) async throws -> [Episode] {
+        let episodeURLs = (urls ?? []).compactMap(URL.init(string:))
         let endpoints = APIEndpoint.episodes(urls: episodeURLs)
 
         return try await withThrowingTaskGroup(of: Episode.self) { group in

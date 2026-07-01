@@ -10,13 +10,13 @@ struct CachedCharacterList: Codable {
 
 struct CachedCharacter: Codable {
     let id: Int
-    let name: String
-    let status: String
-    let species: String
-    let gender: String
+    let name: String?
+    let status: String?
+    let species: String?
+    let gender: String?
     let imageURL: String?
-    let origin: String
-    let location: String
+    let origin: String?
+    let location: String?
     let episodeURLs: [String]
 }
 
@@ -75,7 +75,7 @@ enum CharacterCacheStore {
                 CachedCharacter(
                     id: $0.id,
                     name: $0.name,
-                    status: $0.status.rawValue,
+                    status: $0.status?.rawValue,
                     species: $0.species,
                     gender: $0.gender,
                     imageURL: $0.imageURL?.absoluteString,
@@ -144,7 +144,7 @@ enum CharacterCacheStore {
             Character(
                 id: $0.id,
                 name: $0.name,
-                status: CharacterStatus(rawValue: $0.status),
+                status: $0.status.flatMap { CharacterStatus(rawValue: $0) },
                 species: $0.species,
                 gender: $0.gender,
                 imageURL: $0.imageURL.flatMap(URL.init(string:)),
