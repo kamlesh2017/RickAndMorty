@@ -12,20 +12,18 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
         self.reachability = reachability
     }
 
-    func fetchCharacters(query: CharacterQuery) async throws -> PaginatedCharacters {
+    func fetchCharacters(url: URL) async throws -> PaginatedCharacters {
         guard reachability.isConnected else {
             return try offlineFallback()
         }
 
-        let url = APIEndpoint.characters(page: query.page, name: query.name, status: query.status)
-
         do {
             let response: CharactersResponseDTO = try await networkService.request(CharactersResponseDTO.self, url: url)
-            let result = CharacterMapper.map(response, page: query.page)
-            cacheCharacters(result, query: query)
+            let result = CharacterMapper.map(response)
+            cacheCharacters(result)
             return result
         } catch let error as NetworkError where error == .httpError(statusCode: 404) {
-            return PaginatedCharacters(characters: [], currentPage: query.page, hasNextPage: false)
+            return PaginatedCharacters(characters: [], nextPageURL: nil)
         } catch {
             if let cached = cachedCharacters() {
                 return cached
@@ -56,8 +54,8 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
         CharacterCacheStore.load()
     }
 
-    func cacheCharacters(_ result: PaginatedCharacters, query: CharacterQuery) {
-        CharacterCacheStore.save(result, query: query)
+    func cacheCharacters(_ result: PaginatedCharacters) {
+        CharacterCacheStore.save(result)
     }
 
     private func offlineFallback() throws -> PaginatedCharacters {

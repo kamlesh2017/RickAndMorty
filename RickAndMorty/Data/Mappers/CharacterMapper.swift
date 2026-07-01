@@ -33,11 +33,10 @@ enum CharacterMapper {
         Episode(id: dto.id, name: dto.name, airDate: dto.airDate)
     }
 
-    static func map(_ response: CharactersResponseDTO, page: Int) -> PaginatedCharacters {
+    static func map(_ response: CharactersResponseDTO) -> PaginatedCharacters {
         PaginatedCharacters(
             characters: response.results.map(map),
-            currentPage: page,
-            hasNextPage: response.info.next != nil
+            nextPageURL: response.info.next.flatMap(URL.init(string:))
         )
     }
 }

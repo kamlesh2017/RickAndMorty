@@ -4,10 +4,7 @@ import Foundation
 
 struct CachedCharacterList: Codable {
     let characters: [CachedCharacter]
-    let currentPage: Int
-    let hasNextPage: Bool
-    let queryName: String?
-    let queryStatus: String?
+    let nextPageURL: String?
     let expirationDate: Date
 }
 
@@ -55,10 +52,7 @@ enum CharacterCacheStore {
     
     // MARK: Save
     
-    static func save(
-        _ result: PaginatedCharacters,
-        query: CharacterQuery
-    ) {
+    static func save(_ result: PaginatedCharacters) {
         
         let expiryDate = Date().addingTimeInterval(expiryInterval)
         
@@ -90,10 +84,7 @@ enum CharacterCacheStore {
                     episodeURLs: $0.episodeURLs.map(\.absoluteString)
                 )
             },
-            currentPage: result.currentPage,
-            hasNextPage: result.hasNextPage,
-            queryName: query.name,
-            queryStatus: query.status?.rawValue,
+            nextPageURL: result.nextPageURL?.absoluteString,
             expirationDate: expiryDate
         )
         
@@ -165,8 +156,7 @@ enum CharacterCacheStore {
         
         let result = PaginatedCharacters(
             characters: characters,
-            currentPage: cached.currentPage,
-            hasNextPage: cached.hasNextPage
+            nextPageURL: cached.nextPageURL.flatMap(URL.init(string:))
         )
         
         // Rehydrate Memory Cache

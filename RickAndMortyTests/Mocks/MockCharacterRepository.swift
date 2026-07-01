@@ -2,12 +2,12 @@ import Foundation
 @testable import RickAndMorty
 
 final class MockCharacterRepository: CharacterRepositoryProtocol, @unchecked Sendable {
-    var fetchCharactersCalls: [CharacterQuery] = []
+    var fetchCharactersCalls: [URL] = []
     var fetchCharactersResult: Result<PaginatedCharacters, Error> = .success(.empty)
     var cachedResultValue: PaginatedCharacters?
 
-    func fetchCharacters(query: CharacterQuery) async throws -> PaginatedCharacters {
-        fetchCharactersCalls.append(query)
+    func fetchCharacters(url: URL) async throws -> PaginatedCharacters {
+        fetchCharactersCalls.append(url)
         return try fetchCharactersResult.get()
     }
 
@@ -19,12 +19,12 @@ final class MockCharacterRepository: CharacterRepositoryProtocol, @unchecked Sen
         cachedResultValue
     }
 
-    func cacheCharacters(_ result: PaginatedCharacters, query: CharacterQuery) {}
+    func cacheCharacters(_ result: PaginatedCharacters) {}
 }
 
 extension PaginatedCharacters {
     static var empty: PaginatedCharacters {
-        PaginatedCharacters(characters: [], currentPage: 1, hasNextPage: false)
+        PaginatedCharacters(characters: [], nextPageURL: nil)
     }
 }
 

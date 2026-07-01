@@ -1,8 +1,8 @@
 import Foundation
 
 protocol CharacterRepositoryProtocol: Sendable {
-    func fetchCharacters(query: CharacterQuery) async throws -> PaginatedCharacters
+    func fetchCharacters(url: URL) async throws -> PaginatedCharacters
     func fetchCharacterDetail(id: Int) async throws -> CharacterDetail
     func cachedCharacters() -> PaginatedCharacters?
-    func cacheCharacters(_ result: PaginatedCharacters, query: CharacterQuery)
+    func cacheCharacters(_ result: PaginatedCharacters)
 }

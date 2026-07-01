@@ -138,8 +138,8 @@ struct CharacterDetailView: View {
 }
 
 private final class PreviewCharacterRepository: CharacterRepositoryProtocol, @unchecked Sendable {
-    func fetchCharacters(query: CharacterQuery) async throws -> PaginatedCharacters {
-        PaginatedCharacters(characters: [], currentPage: 1, hasNextPage: false)
+    func fetchCharacters(url: URL) async throws -> PaginatedCharacters {
+        PaginatedCharacters(characters: [], nextPageURL: nil)
     }
 
     func fetchCharacterDetail(id: Int) async throws -> CharacterDetail {
@@ -159,5 +159,5 @@ private final class PreviewCharacterRepository: CharacterRepositoryProtocol, @un
     }
 
     func cachedCharacters() -> PaginatedCharacters? { nil }
-    func cacheCharacters(_ result: PaginatedCharacters, query: CharacterQuery) {}
+    func cacheCharacters(_ result: PaginatedCharacters) {}
 }

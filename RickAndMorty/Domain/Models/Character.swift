@@ -26,24 +26,5 @@ struct CharacterDetail: Equatable, Identifiable, Sendable {
 
 struct PaginatedCharacters: Equatable, Sendable {
     let characters: [Character]
-    let currentPage: Int
-    let hasNextPage: Bool
-}
-
-struct CharacterQuery: Equatable, Sendable {
-    let page: Int
-    let name: String?
-    let status: CharacterStatus?
-
-    static func initial(name: String? = nil, status: CharacterStatus? = nil) -> CharacterQuery {
-        CharacterQuery(page: 1, name: name, status: status)
-    }
-
-    func nextPage() -> CharacterQuery {
-        CharacterQuery(page: page + 1, name: name, status: status)
-    }
-
-    func resettingPage(name: String?, status: CharacterStatus?) -> CharacterQuery {
-        CharacterQuery(page: 1, name: name, status: status)
-    }
+    let nextPageURL: URL?
 }

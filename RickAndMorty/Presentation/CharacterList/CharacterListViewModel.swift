@@ -33,7 +33,7 @@ final class CharacterListViewModel: ObservableObject {
 
     private let fetchCharactersUseCase: FetchCharactersUseCase
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
-    private var currentQuery = CharacterQuery.initial()
+    private var nextPageURL: URL?
     private var searchTask: Task<Void, Never>?
     private var isFetching = false
 
@@ -51,17 +51,15 @@ final class CharacterListViewModel: ObservableObject {
     }
 
     func reload() async {
-        currentQuery = CharacterQuery.initial(
-            name: normalizedSearchText,
-            status: selectedStatus
-        )
+        nextPageURL = nil
         characters = []
         hasNextPage = false
-        await fetch(reset: true)
+        await fetch(reset: true, name: normalizedSearchText, status: selectedStatus)
     }
 
     func loadNextPageIfNeeded(currentCharacter: Character) async {
         guard
+            let nextPageURL,
             hasNextPage,
             !isFetching,
             currentCharacter.id == characters.last?.id
@@ -69,12 +67,15 @@ final class CharacterListViewModel: ObservableObject {
             return
         }
 
-        currentQuery = currentQuery.nextPage()
-        await fetch(reset: false)
+        await fetch(reset: false, url: nextPageURL)
     }
 
     func retry() async {
-        await fetch(reset: characters.isEmpty)
+        if characters.isEmpty {
+            await fetch(reset: true, name: normalizedSearchText, status: selectedStatus)
+        } else if let nextPageURL {
+            await fetch(reset: false, url: nextPageURL)
+        }
     }
 
     func toggleFavorite(for characterID: Int) {
@@ -100,13 +101,18 @@ final class CharacterListViewModel: ObservableObject {
         }
     }
 
-    private func fetch(reset: Bool) async {
+    private func fetch(reset: Bool, name: String? = nil, status: CharacterStatus? = nil, url: URL? = nil) async {
         guard !isFetching else { return }
         isFetching = true
         state = reset ? .loading : .loadingMore
 
         do {
-            let result = try await fetchCharactersUseCase.execute(query: currentQuery)
+            let result: PaginatedCharacters
+            if let url {
+                result = try await fetchCharactersUseCase.execute(url: url)
+            } else {
+                result = try await fetchCharactersUseCase.execute(name: name, status: status)
+            }
 
             if reset {
                 characters = result.characters
@@ -114,7 +120,8 @@ final class CharacterListViewModel: ObservableObject {
                 characters.append(contentsOf: result.characters)
             }
 
-            hasNextPage = result.hasNextPage
+            nextPageURL = result.nextPageURL
+            hasNextPage = result.nextPageURL != nil
             refreshFavoriteState()
 
             if characters.isEmpty {
@@ -125,7 +132,8 @@ final class CharacterListViewModel: ObservableObject {
         } catch {
             if characters.isEmpty, let cached = fetchCharactersUseCase.cachedResult() {
                 characters = cached.characters
-                hasNextPage = cached.hasNextPage
+                nextPageURL = cached.nextPageURL
+                hasNextPage = cached.nextPageURL != nil
                 refreshFavoriteState()
                 state = .offlineCached
             } else if characters.isEmpty {
