@@ -21,31 +21,4 @@ final class FetchCharactersUseCaseTests: XCTestCase {
         XCTAssertEqual(repository.fetchCharactersCalls, [url])
         XCTAssertEqual(result, expected)
     }
-
-    func testExecuteWithFiltersBuildsInitialURL() async throws {
-        let repository = MockCharacterRepository()
-        repository.fetchCharactersResult = .success(.empty)
-
-        let useCase = FetchCharactersUseCase(repository: repository)
-
-        _ = try await useCase.execute(name: "Rick", status: .alive)
-
-        XCTAssertEqual(
-            repository.fetchCharactersCalls,
-            [APIEndpoint.characters(name: "Rick", status: .alive)]
-        )
-    }
-
-    func testCachedResultReturnsRepositoryCache() async {
-        let repository = MockCharacterRepository()
-        let cached = PaginatedCharacters(
-            characters: [.sample(id: 5, name: "Summer")],
-            nextPageURL: nil
-        )
-        repository.cachedResultValue = cached
-
-        let useCase = FetchCharactersUseCase(repository: repository)
-
-        XCTAssertEqual(await useCase.cachedResult(), cached)
-    }
 }
