@@ -5,26 +5,35 @@ enum CharacterMapper {
         Character(
             id: dto.id,
             name: dto.name,
-            status: CharacterStatus(rawValue: dto.status),
+            status: dto.status.map(CharacterStatus.init(rawValue:)),
             species: dto.species,
             gender: dto.gender,
-            imageURL: URL(string: dto.image),
-            origin: dto.origin.name,
-            location: dto.location.name,
-            episodeURLs: dto.episode.compactMap(URL.init(string:))
+            imageURL: dto.image.flatMap(URL.init(string:)),
+            origin: dto.origin?.name,
+            location: dto.location?.name,
+            episodeURLs: (dto.episode ?? []).compactMap(URL.init(string:))
         )
     }
 
-    static func mapDetail(_ dto: CharacterDTO, episodes: [Episode]) -> CharacterDetail {
+    static func map(_ dto: LocationDetailDTO) -> Location {
+        Location(name: dto.name, type: dto.type)
+    }
+
+    static func mapDetail(
+        _ dto: CharacterDTO,
+        origin: Location?,
+        location: Location?,
+        episodes: [Episode]
+    ) -> CharacterDetail {
         CharacterDetail(
             id: dto.id,
             name: dto.name,
-            status: CharacterStatus(rawValue: dto.status),
+            status: dto.status.map(CharacterStatus.init(rawValue:)),
             species: dto.species,
             gender: dto.gender,
-            imageURL: URL(string: dto.image),
-            origin: dto.origin.name,
-            location: dto.location.name,
+            imageURL: dto.image.flatMap(URL.init(string:)),
+            origin: origin,
+            location: location,
             episodes: episodes
         )
     }
@@ -33,11 +42,10 @@ enum CharacterMapper {
         Episode(id: dto.id, name: dto.name, airDate: dto.airDate)
     }
 
-    static func map(_ response: CharactersResponseDTO, page: Int) -> PaginatedCharacters {
+    static func map(_ response: CharactersResponseDTO) -> PaginatedCharacters {
         PaginatedCharacters(
-            characters: response.results.map(map),
-            currentPage: page,
-            hasNextPage: response.info.next != nil
+            characters: (response.results ?? []).map(map),
+            nextPageURL: response.info?.next.flatMap(URL.init(string:))
         )
     }
 }

@@ -55,18 +55,22 @@ struct CharacterDetailView: View {
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
                 VStack(spacing: 8) {
-                    Text(character.name)
+                    Text(character.name ?? "")
                         .font(.title.bold())
                         .multilineTextAlignment(.center)
 
-                    StatusBadgeView(status: character.status)
+                    StatusBadgeView(status: character.status ?? .unknown)
                 }
 
                 infoCard(title: "Details") {
                     detailRow(title: "Species", value: character.species)
                     detailRow(title: "Gender", value: character.gender)
-                    detailRow(title: "Origin", value: character.origin)
-                    detailRow(title: "Location", value: character.location)
+                    if let origin = character.origin {
+                        locationRow(title: "Origin", location: origin)
+                    }
+                    if let location = character.location {
+                        locationRow(title: "Location", location: location)
+                    }
                 }
 
                 infoCard(title: "Episodes (\(character.episodes.count))") {
@@ -77,9 +81,9 @@ struct CharacterDetailView: View {
                     } else {
                         ForEach(character.episodes, id: \.id) { episode in
                             VStack(alignment: .leading, spacing: 4) {
-                                Text(episode.name)
+                                Text(episode.name ?? "")
                                     .font(.subheadline.weight(.medium))
-                                Text(episode.airDate)
+                                Text(episode.airDate ?? "")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -109,12 +113,27 @@ struct CharacterDetailView: View {
         .background(AppColors.cardBackground, in: RoundedRectangle(cornerRadius: 12))
     }
 
-    private func detailRow(title: String, value: String) -> some View {
+    private func locationRow(title: String, location: Location) -> some View {
         HStack(alignment: .top) {
             Text(title)
                 .foregroundStyle(.secondary)
                 .frame(width: 90, alignment: .leading)
-            Text(value)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(location.name ?? "")
+                Text(location.type ?? "")
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .font(.subheadline)
+    }
+
+    private func detailRow(title: String, value: String?) -> some View {
+        HStack(alignment: .top) {
+            Text(title)
+                .foregroundStyle(.secondary)
+                .frame(width: 90, alignment: .leading)
+            Text(value ?? "")
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .font(.subheadline)
@@ -138,8 +157,8 @@ struct CharacterDetailView: View {
 }
 
 private final class PreviewCharacterRepository: CharacterRepositoryProtocol, @unchecked Sendable {
-    func fetchCharacters(query: CharacterQuery) async throws -> PaginatedCharacters {
-        PaginatedCharacters(characters: [], currentPage: 1, hasNextPage: false)
+    func fetchCharacters(url: URL) async throws -> PaginatedCharacters {
+        PaginatedCharacters(characters: [], nextPageURL: nil)
     }
 
     func fetchCharacterDetail(id: Int) async throws -> CharacterDetail {
@@ -150,14 +169,14 @@ private final class PreviewCharacterRepository: CharacterRepositoryProtocol, @un
             species: "Human",
             gender: "Male",
             imageURL: nil,
-            origin: "Earth (C-137)",
-            location: "Citadel of Ricks",
+            origin: Location(name: "Earth (C-137)", type: "Planet"),
+            location: Location(name: "Citadel of Ricks", type: "Space station"),
             episodes: [
                 Episode(id: 1, name: "Pilot", airDate: "December 2, 2013")
             ]
         )
     }
 
-    func cachedCharacters() -> PaginatedCharacters? { nil }
-    func cacheCharacters(_ result: PaginatedCharacters, query: CharacterQuery) {}
+    func cachedCharacters() async -> PaginatedCharacters? { nil }
+    func cacheCharacters(_ result: PaginatedCharacters) async {}
 }

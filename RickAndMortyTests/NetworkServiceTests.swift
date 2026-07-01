@@ -13,8 +13,8 @@ final class NetworkServiceTests: XCTestCase {
             "species": "Human",
             "gender": "Male",
             "image": "https://rickandmortyapi.com/api/character/avatar/1.jpeg",
-            "origin": { "name": "Earth (C-137)" },
-            "location": { "name": "Citadel of Ricks" },
+            "origin": { "name": "Earth (C-137)", "url": "https://rickandmortyapi.com/api/location/1" },
+            "location": { "name": "Citadel of Ricks", "url": "https://rickandmortyapi.com/api/location/3" },
             "episode": ["https://rickandmortyapi.com/api/episode/1"]
           }]
         }
@@ -25,8 +25,8 @@ final class NetworkServiceTests: XCTestCase {
 
         let response: CharactersResponseDTO = try await service.request(CharactersResponseDTO.self, url: URL(string: "https://rickandmortyapi.com/api/character")!)
 
-        XCTAssertEqual(response.results.count, 1)
-        XCTAssertEqual(response.results.first?.name, "Rick Sanchez")
+        XCTAssertEqual(response.results?.count, 1)
+        XCTAssertEqual(response.results?.first?.name, "Rick Sanchez")
     }
 
     func testHTTPErrorIsMapped() async {
@@ -65,11 +65,7 @@ final class NetworkServiceTests: XCTestCase {
             _ = try await service.request(CharactersResponseDTO.self, url: URL(string: "https://rickandmortyapi.com/api/character")!)
             XCTFail("Expected underlying error")
         } catch let error as NetworkError {
-            if case .underlying = error {
-                XCTAssertTrue(true)
-            } else {
-                XCTFail("Expected underlying error, got \(error)")
-            }
+            XCTAssertEqual(error, .noConnection)
         } catch {
             XCTFail("Unexpected error: \(error)")
         }

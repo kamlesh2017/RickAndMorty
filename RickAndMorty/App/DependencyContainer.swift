@@ -1,9 +1,12 @@
 import Foundation
+import SwiftData
 
 @MainActor
 final class DependencyContainer {
     static let shared = DependencyContainer()
     static let preview = DependencyContainer(isPreview: true)
+
+    let modelContainer: ModelContainer
 
     private let session: URLSessionProtocol
     private let networkService: NetworkServiceProtocol
@@ -15,15 +18,24 @@ final class DependencyContainer {
     private let toggleFavoriteUseCase: ToggleFavoriteUseCase
 
     init(isPreview: Bool = false) {
-        let configuration = URLSessionConfiguration.default
-        configuration.timeoutIntervalForRequest = 30
-        session = URLSession(configuration: configuration)
+        let schema = Schema([CachedCharacterPage.self, CachedCharacterEntity.self])
+        let modelConfiguration = ModelConfiguration(isStoredInMemoryOnly: isPreview)
+        modelContainer = try! ModelContainer(for: schema, configurations: modelConfiguration)
+
+        let sessionConfiguration = URLSessionConfiguration.default
+        sessionConfiguration.timeoutIntervalForRequest = 30
+        session = URLSession(configuration: sessionConfiguration)
 
         let reachability: NetworkReachabilityManaging = isPreview
             ? PreviewNetworkReachability()
             : NetworkReachabilityManager.shared
-        networkService = NetworkService(session: session, reachability: reachability)
-        characterRepository = CharacterRepository(networkService: networkService, reachability: reachability)
+        networkService = NetworkService(session: session)
+        let cacheStore = CharacterCacheStore(modelContainer: modelContainer)
+        characterRepository = CharacterRepository(
+            networkService: networkService,
+            reachability: reachability,
+            cacheStore: cacheStore
+        )
         favoritesRepository = FavoritesRepository(
             defaults: isPreview ? UserDefaults(suiteName: "preview")! : .standard
         )

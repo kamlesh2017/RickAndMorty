@@ -61,26 +61,42 @@ struct CharacterListView: View {
         .background(Color(.systemBackground))
     }
 
+    @ViewBuilder
     private var listContent: some View {
-        List {
-            if viewModel.state == .loading {
-                loadingSection
-            } else {
-                characterSection
+        switch viewModel.state {
+        case .empty:
+            EmptyStateView(
+                title: "No Characters Found",
+                systemImage: "magnifyingglass",
+                message: "Try adjusting your search or filters."
+            )
+        case .error(let message):
+            EmptyStateView(
+                title: "Something Went Wrong",
+                systemImage: "exclamationmark.triangle",
+                message: message,
+                actionTitle: "Retry"
+            ) {
+                Task { await viewModel.retry() }
+            }
+        default:
+            List {
+                if viewModel.state == .loading {
+                    loadingSection
+                } else {
+                    characterSection
 
-                if viewModel.state == .loadingMore {
-                    HStack {
-                        Spacer()
-                        ProgressView()
-                        Spacer()
+                    if viewModel.state == .loadingMore {
+                        HStack {
+                            Spacer()
+                            ProgressView()
+                            Spacer()
+                        }
+                        .listRowSeparator(.hidden)
                     }
-                    .listRowSeparator(.hidden)
                 }
             }
-        }
-        .listStyle(.insetGrouped)
-        .overlay {
-            overlayContent
+            .listStyle(.insetGrouped)
         }
     }
 
@@ -120,29 +136,6 @@ struct CharacterListView: View {
                     await viewModel.loadNextPageIfNeeded(currentCharacter: character)
                 }
             }
-        }
-    }
-
-    @ViewBuilder
-    private var overlayContent: some View {
-        switch viewModel.state {
-        case .empty:
-            EmptyStateView(
-                title: "No Characters Found",
-                systemImage: "magnifyingglass",
-                message: "Try adjusting your search or filters."
-            )
-        case .error(let message):
-            EmptyStateView(
-                title: "Something Went Wrong",
-                systemImage: "exclamationmark.triangle",
-                message: message,
-                actionTitle: "Retry"
-            ) {
-                Task { await viewModel.retry() }
-            }
-        default:
-            EmptyView()
         }
     }
 }

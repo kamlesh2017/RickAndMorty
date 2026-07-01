@@ -3,33 +3,31 @@ import Foundation
 final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendable {
     private let networkService: NetworkServiceProtocol
     private let reachability: NetworkReachabilityManaging
+    private let cacheStore: CharacterCacheStore
 
     init(
         networkService: NetworkServiceProtocol,
-        reachability: NetworkReachabilityManaging = NetworkReachabilityManager.shared
+        reachability: NetworkReachabilityManaging = NetworkReachabilityManager.shared,
+        cacheStore: CharacterCacheStore
     ) {
         self.networkService = networkService
         self.reachability = reachability
+        self.cacheStore = cacheStore
     }
 
-    func fetchCharacters(query: CharacterQuery) async throws -> PaginatedCharacters {
+    func fetchCharacters(url: URL) async throws -> PaginatedCharacters {
         guard reachability.isConnected else {
-            return try offlineFallback()
+            throw DomainError.networkUnavailable
         }
-
-        let url = APIEndpoint.characters(page: query.page, name: query.name, status: query.status)
 
         do {
             let response: CharactersResponseDTO = try await networkService.request(CharactersResponseDTO.self, url: url)
-            let result = CharacterMapper.map(response, page: query.page)
-            cacheCharacters(result, query: query)
+            let result = CharacterMapper.map(response)
+            await cacheCharacters(result)
             return result
         } catch let error as NetworkError where error == .httpError(statusCode: 404) {
-            return PaginatedCharacters(characters: [], currentPage: query.page, hasNextPage: false)
+            return PaginatedCharacters(characters: [], nextPageURL: nil)
         } catch {
-            if let cached = cachedCharacters() {
-                return cached
-            }
             throw mapError(error)
         }
     }
@@ -43,8 +41,15 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
 
         do {
             let characterDTO: CharacterDTO = try await networkService.request(CharacterDTO.self, url: url)
-            let episodes = try await fetchEpisodes(from: characterDTO.episode)
-            return CharacterMapper.mapDetail(characterDTO, episodes: episodes)
+            async let origin = fetchLocation(from: characterDTO.origin)
+            async let location = fetchLocation(from: characterDTO.location)
+            async let episodes = fetchEpisodes(from: characterDTO.episode)
+            return CharacterMapper.mapDetail(
+                characterDTO,
+                origin: await origin,
+                location: await location,
+                episodes: try await episodes
+            )
         } catch let error as NetworkError where error == .httpError(statusCode: 404) {
             throw DomainError.notFound
         } catch {
@@ -52,23 +57,37 @@ final class CharacterRepository: CharacterRepositoryProtocol, @unchecked Sendabl
         }
     }
 
-    func cachedCharacters() -> PaginatedCharacters? {
-        CharacterCacheStore.load()
+    func cachedCharacters() async -> PaginatedCharacters? {
+        await cacheStore.load()
     }
 
-    func cacheCharacters(_ result: PaginatedCharacters, query: CharacterQuery) {
-        CharacterCacheStore.save(result, query: query)
+    func cacheCharacters(_ result: PaginatedCharacters) async {
+        await cacheStore.save(result)
     }
 
-    private func offlineFallback() throws -> PaginatedCharacters {
-        if let cached = cachedCharacters() {
-            return cached
+    private func fetchLocation(from reference: LocationDTO?) async -> Location? {
+        guard let reference else { return nil }
+
+        let resolved: Location
+        if let urlString = reference.url, let url = URL(string: urlString) {
+            do {
+                let dto: LocationDetailDTO = try await networkService.request(LocationDetailDTO.self, url: url)
+                resolved = CharacterMapper.map(dto)
+            } catch {
+                resolved = Location(name: reference.name, type: nil)
+            }
+        } else {
+            resolved = Location(name: reference.name, type: nil)
         }
-        throw DomainError.networkUnavailable
+
+        if resolved.name == nil && resolved.type == nil {
+            return nil
+        }
+        return resolved
     }
 
-    private func fetchEpisodes(from urls: [String]) async throws -> [Episode] {
-        let episodeURLs = urls.compactMap(URL.init(string:))
+    private func fetchEpisodes(from urls: [String]?) async throws -> [Episode] {
+        let episodeURLs = (urls ?? []).compactMap(URL.init(string:))
         let endpoints = APIEndpoint.episodes(urls: episodeURLs)
 
         return try await withThrowingTaskGroup(of: Episode.self) { group in

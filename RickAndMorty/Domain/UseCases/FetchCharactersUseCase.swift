@@ -7,11 +7,15 @@ struct FetchCharactersUseCase: Sendable {
         self.repository = repository
     }
 
-    func execute(query: CharacterQuery) async throws -> PaginatedCharacters {
-        try await repository.fetchCharacters(query: query)
+    func execute(url: URL) async throws -> PaginatedCharacters {
+        try await repository.fetchCharacters(url: url)
     }
 
-    func cachedResult() -> PaginatedCharacters? {
-        repository.cachedCharacters()
+    func execute(name: String?, status: CharacterStatus?) async throws -> PaginatedCharacters {
+        try await execute(url: APIEndpoint.characters(name: name, status: status))
+    }
+
+    func cachedResult() async -> PaginatedCharacters? {
+        await repository.cachedCharacters()
     }
 }
