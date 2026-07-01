@@ -6,24 +6,17 @@ protocol NetworkServiceProtocol: Sendable {
 
 final class NetworkService: NetworkServiceProtocol, @unchecked Sendable {
     private let session: URLSessionProtocol
-    private let reachability: NetworkReachabilityManaging
     private let decoder: JSONDecoder
 
     init(
         session: URLSessionProtocol,
-        reachability: NetworkReachabilityManaging = NetworkReachabilityManager.shared,
         decoder: JSONDecoder = JSONDecoder()
     ) {
         self.session = session
-        self.reachability = reachability
         self.decoder = decoder
     }
 
     func request<T: Decodable>(_ type: T.Type, url: URL) async throws -> T {
-        guard reachability.isConnected else {
-            throw NetworkError.noConnection
-        }
-
         let request = URLRequest(url: url)
 
         let data: Data

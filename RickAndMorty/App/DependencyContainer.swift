@@ -29,7 +29,7 @@ final class DependencyContainer {
         let reachability: NetworkReachabilityManaging = isPreview
             ? PreviewNetworkReachability()
             : NetworkReachabilityManager.shared
-        networkService = NetworkService(session: session, reachability: reachability)
+        networkService = NetworkService(session: session)
         let cacheStore = CharacterCacheStore(modelContainer: modelContainer)
         characterRepository = CharacterRepository(
             networkService: networkService,

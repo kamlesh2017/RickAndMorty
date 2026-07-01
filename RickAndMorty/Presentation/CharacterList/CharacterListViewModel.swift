@@ -104,6 +104,7 @@ final class CharacterListViewModel: ObservableObject {
     private func fetch(reset: Bool, name: String? = nil, status: CharacterStatus? = nil, url: URL? = nil) async {
         guard !isFetching else { return }
         isFetching = true
+        defer { isFetching = false }
         state = reset ? .loading : .loadingMore
 
         do {
@@ -147,8 +148,6 @@ final class CharacterListViewModel: ObservableObject {
                 state = .loaded
             }
         }
-
-        isFetching = false
     }
 
     private func refreshFavoriteState() {
